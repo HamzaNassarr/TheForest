@@ -1,0 +1,587 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --fd:#0d1a0f;--fm:#1a2e1c;--fg:#2d5a30;--lf:#4a8c4e;--mn:#7ec982;--gd:#c9a84e;
+  --ab:#e8b84b;--rr:#c94a4a;--tl:#d4edd6;--tm:#7a9e7d;
+}
+body{background:var(--fd);color:var(--tl);font-family:'Crimson Pro',Georgia,serif;overscroll-behavior:none;}
+.app{display:flex;flex-direction:column;width:100%;max-width:430px;margin:0 auto;}
+.header{background:#0a150b;padding:14px 16px 10px;border-bottom:1px solid rgba(74,140,78,0.2);position:relative;}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--lf),transparent);}
+.header-row{display:flex;justify-content:space-between;align-items:flex-start;}
+.forest-title{font-family:'Cinzel',serif;font-size:20px;font-weight:600;color:var(--mn);letter-spacing:3px;line-height:1;}
+.forest-sub{font-size:12px;color:var(--tm);font-style:italic;margin-top:3px;letter-spacing:.5px;}
+.date-disp{text-align:right;font-family:'Cinzel',serif;font-size:10px;color:var(--tm);letter-spacing:.5px;line-height:1.5;}
+.cel-row{margin-top:8px;font-size:13px;color:var(--gd);display:flex;align-items:center;gap:6px;}
+.cel-row span{font-style:italic;color:var(--tl);}
+.week-strip{display:flex;align-items:center;margin-top:8px;gap:4px;}
+.week-lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;color:var(--tm);margin-right:2px;}
+.wdot{width:32px;height:7px;border-radius:4px;background:var(--fm);border:1px solid rgba(74,140,78,.25);}
+.wdot.alive{background:var(--lf);border-color:var(--mn);}
+.wdot.dead{background:var(--rr);border-color:#a03030;}
+.wdot.today{border-color:var(--ab);border-width:1.5px;}
+.log-warn{font-size:11px;color:var(--rr);margin-left:4px;font-style:italic;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-bar{display:flex;align-items:center;gap:6px;padding:5px 16px;background:rgba(74,140,78,.06);border-bottom:1px solid rgba(74,140,78,.1);font-family:'Cinzel',serif;font-size:9px;letter-spacing:.8px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--tm);flex-shrink:0;}
+.sync-dot.ok{background:var(--mn);}
+.sync-dot.err{background:var(--rr);}
+.sync-dot.saving{background:var(--ab);animation:pulse 1s infinite;}
+.sync-txt{color:var(--tm);}
+.setup-banner{background:rgba(201,168,78,.08);border:1px solid rgba(201,168,78,.35);border-radius:9px;padding:14px;margin:12px 14px 0;}
+.setup-t{font-family:'Cinzel',serif;font-size:11px;color:var(--gd);letter-spacing:1px;margin-bottom:8px;}
+.setup-b{font-size:13px;color:var(--tl);margin-bottom:10px;line-height:1.5;}
+.finput{width:100%;background:var(--fd);border:1px solid rgba(74,140,78,.3);border-radius:7px;color:var(--tl);padding:10px 12px;font-family:'Crimson Pro',serif;font-size:14px;outline:none;margin-bottom:6px;}
+.finput:focus{border-color:var(--lf);}
+.fselect{width:100%;background:var(--fd);border:1px solid rgba(74,140,78,.3);border-radius:7px;color:var(--tl);padding:10px 12px;font-family:'Crimson Pro',serif;font-size:15px;outline:none;-webkit-appearance:none;margin-bottom:0;}
+.fselect option{background:var(--fd);}
+.btn{display:inline-block;font-family:'Cinzel',serif;font-size:10px;letter-spacing:1.2px;padding:10px 18px;border-radius:7px;border:1px solid;cursor:pointer;background:transparent;}
+.btn-p{border-color:var(--lf);color:var(--mn);}
+.btn-p:active{background:rgba(74,140,78,.2);}
+.btn-d{border-color:var(--rr);color:var(--rr);}
+.btn-full{width:100%;text-align:center;padding:11px;}
+.nav{display:flex;background:var(--fm);border-bottom:1px solid rgba(74,140,78,.15);}
+.tab{flex:1;padding:11px 4px;text-align:center;font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;color:var(--tm);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .2s;}
+.tab.active{color:var(--mn);border-bottom-color:var(--mn);background:rgba(74,140,78,.05);}
+.content{padding:14px 14px 80px;}
+.sec{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--tm);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.sec::after{content:'';flex:1;height:1px;background:rgba(74,140,78,.2);}
+.seed-card{background:var(--fm);border:1px solid rgba(74,140,78,.2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:11px;margin-bottom:8px;min-height:56px;cursor:pointer;transition:border-color .15s;}
+.seed-card.grown{border-color:var(--lf);background:rgba(45,90,48,.3);}
+.seed-card.rotted{border-color:var(--rr);background:rgba(201,74,74,.1);opacity:.75;}
+.seed-card.cel{border-color:var(--gd);}
+.root-icon{font-size:22px;width:30px;text-align:center;flex-shrink:0;}
+.seed-info{flex:1;min-width:0;}
+.root-nm{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.2px;color:var(--tm);margin-bottom:2px;}
+.seed-txt{font-size:15px;color:var(--tl);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.chk{width:28px;height:28px;border-radius:50%;border:1px solid rgba(74,140,78,.4);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;transition:all .2s;}
+.chk.grown{background:var(--lf);border-color:var(--mn);color:#0d1a0f;}
+.chk.rotted{background:rgba(201,74,74,.25);border-color:var(--rr);color:var(--rr);}
+.alert-dead{background:rgba(201,74,74,.1);border:1px solid rgba(201,74,74,.4);border-radius:8px;padding:11px 13px;margin-bottom:10px;font-size:13px;color:var(--rr);font-style:italic;}
+.alert-log{background:rgba(201,74,74,.12);border:1px solid var(--rr);border-radius:9px;padding:13px;margin-bottom:10px;}
+.alert-log-t{font-family:'Cinzel',serif;font-size:12px;color:var(--rr);margin-bottom:5px;}
+.alert-log-b{font-size:13px;color:#e09090;font-style:italic;}
+.punish-box{background:rgba(201,74,74,.07);border:1px solid rgba(201,74,74,.3);border-radius:9px;padding:12px 13px;margin-bottom:10px;}
+.punish-t{font-family:'Cinzel',serif;font-size:10px;color:var(--rr);letter-spacing:1.5px;margin-bottom:5px;}
+.punish-root{font-size:16px;font-style:italic;}
+.punish-desc{font-size:12px;color:var(--tm);margin-top:4px;}
+.add-btn{width:100%;background:transparent;border:1px dashed rgba(74,140,78,.3);border-radius:9px;padding:11px;color:var(--tm);font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;margin-bottom:12px;}
+.add-btn:active{border-color:var(--lf);color:var(--mn);}
+.exc-inp{display:flex;gap:8px;margin-top:8px;}
+.exc-inp input{flex:1;background:var(--fd);border:1px solid rgba(74,140,78,.3);border-radius:7px;color:var(--tl);padding:10px;font-family:'Crimson Pro',serif;font-size:14px;outline:none;}
+.exc-inp input:focus{border-color:var(--lf);}
+.exc-mark-btn{background:transparent;border:1px solid var(--lf);border-radius:7px;color:var(--mn);font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;padding:0 14px;cursor:pointer;}
+.exc-today{margin-top:6px;font-size:12px;color:var(--gd);font-style:italic;}
+.tree-card{background:var(--fm);border:1px solid rgba(74,140,78,.2);border-radius:10px;padding:13px;margin-bottom:10px;}
+.tree-hdr{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.tree-badge{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.8px;color:var(--tm);background:rgba(74,140,78,.1);border:1px solid rgba(74,140,78,.2);padding:2px 8px;border-radius:10px;}
+.tree-sbtn{font-family:'Cinzel',serif;font-size:9px;padding:4px 10px;border-radius:10px;border:1px solid;cursor:pointer;letter-spacing:.8px;background:transparent;}
+.tree-sbtn.growing{border-color:var(--gd);color:var(--gd);}
+.tree-sbtn.done{border-color:var(--mn);color:var(--mn);background:rgba(74,140,78,.1);}
+.tree-sbtn.failed{border-color:var(--rr);color:var(--rr);}
+.tree-title{font-size:15px;margin-bottom:6px;line-height:1.3;}
+.tree-prog{height:3px;background:rgba(74,140,78,.15);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.tree-prog-fill{height:100%;background:var(--lf);border-radius:2px;transition:width .4s;}
+.tree-days{font-size:11px;color:var(--tm);}
+.carried{font-size:11px;color:var(--ab);font-style:italic;margin-bottom:4px;}
+.tree-edit-btn{font-family:'Cinzel',serif;font-size:9px;padding:3px 9px;border-radius:5px;border:1px solid rgba(74,140,78,.3);color:var(--tm);background:transparent;cursor:pointer;margin-left:auto;}
+.fviz{background:#0a150b;border:1px solid rgba(74,140,78,.2);border-radius:10px;padding:14px;margin-bottom:12px;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.f-trees{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;min-height:38px;align-items:flex-end;}
+.f-tree{font-size:15px;}
+.f-tree.dim{filter:grayscale(.8) opacity(.4);}
+.f-size-lbl{font-family:'Cinzel',serif;font-size:10px;color:var(--tm);letter-spacing:.8px;margin-top:4px;}
+.stats2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.stat3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.sbox{background:var(--fm);border:1px solid rgba(74,140,78,.2);border-radius:8px;padding:10px;text-align:center;}
+.snum{font-family:'Cinzel',serif;font-size:20px;color:var(--mn);}
+.slbl{font-size:10px;color:var(--tm);letter-spacing:.8px;margin-top:2px;}
+.pbar-row{margin-bottom:9px;}
+.pbar-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.pbar-nm{font-size:13px;}
+.pbar-ct{font-size:11px;color:var(--tm);}
+.pbar-bg{height:4px;background:rgba(74,140,78,.12);border-radius:2px;}
+.pbar-fill{height:100%;border-radius:2px;transition:width .5s;}
+.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:12px;}
+.mday-hdr{text-align:center;font-family:'Cinzel',serif;font-size:9px;color:var(--tm);padding:2px 0;}
+.mday{aspect-ratio:1;border-radius:4px;border:1px solid rgba(74,140,78,.12);background:var(--fm);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--tm);font-family:'Cinzel',serif;}
+.mday.alive{background:rgba(45,90,48,.5);border-color:var(--lf);color:var(--mn);}
+.mday.dead{background:rgba(201,74,74,.2);border-color:var(--rr);color:var(--rr);}
+.mday.exception{background:rgba(201,168,78,.12);border-color:var(--gd);color:var(--gd);}
+.mday.future{opacity:.25;}
+.exc-item{display:flex;align-items:baseline;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(74,140,78,.1);}
+.exc-d{font-family:'Cinzel',serif;font-size:9px;color:var(--tm);min-width:44px;}
+.exc-r{font-style:italic;color:var(--tl);flex:1;margin-left:8px;}
+.overlay{display:none;}
+.overlay.open{display:block;}
+.overlay-bg{background:rgba(10,20,11,.95);padding:16px;}
+.modal{background:var(--fm);border:1px solid rgba(74,140,78,.4);border-radius:13px;padding:18px;}
+.modal-t{font-family:'Cinzel',serif;font-size:13px;color:var(--mn);letter-spacing:2px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.modal-close{background:none;border:none;color:var(--tm);font-size:20px;cursor:pointer;padding:0 0 0 8px;line-height:1;}
+.flabel{display:block;font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;color:var(--tm);margin-bottom:4px;margin-top:12px;}
+.btn-row{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
+.page{display:none;}
+.page.active{display:block;}
+.uid-row{display:flex;align-items:center;gap:6px;margin-top:6px;}
+.uid-lbl{font-size:10px;color:var(--tm);font-family:'Cinzel',serif;letter-spacing:.5px;}
+.uid-val{font-size:10px;color:var(--tm);font-family:monospace;background:rgba(74,140,78,.08);padding:2px 6px;border-radius:4px;cursor:pointer;border:1px solid rgba(74,140,78,.15);}
+.uid-change{font-size:9px;color:var(--tm);font-family:'Cinzel',serif;background:none;border:none;cursor:pointer;text-decoration:underline;letter-spacing:.5px;}
+</style>
+
+<div class="app">
+
+<div class="header">
+  <div class="header-row">
+    <div>
+      <div class="forest-title">THE FOREST</div>
+      <div class="forest-sub">this is not a system. this is life.</div>
+    </div>
+    <div class="date-disp" id="date-disp"></div>
+  </div>
+  <div class="cel-row" id="cel-row"></div>
+  <div class="week-strip">
+    <span class="week-lbl">WEEK</span>
+    <div id="week-dots" style="display:flex;gap:4px;align-items:center;"></div>
+    <span class="log-warn" id="log-warn" style="display:none">⚠ LOGGING</span>
+  </div>
+  <div class="uid-row">
+    <span class="uid-lbl">ID</span>
+    <span class="uid-val" id="uid-display" title="Your forest ID — same ID = same data across devices"></span>
+    <button class="uid-change" onclick="changeUID()">change</button>
+  </div>
+</div>
+
+<div class="sync-bar">
+  <div class="sync-dot" id="sync-dot"></div>
+  <span class="sync-txt" id="sync-txt">connecting...</span>
+</div>
+
+<div id="setup-banner" class="setup-banner" style="display:none">
+  <div class="setup-t">⚙ SUPABASE SETUP REQUIRED</div>
+  <div class="setup-b">Paste your Supabase Project URL and anon key to enable cloud sync across all your devices.</div>
+  <input type="text" class="finput" id="sb-url-input" placeholder="https://xxxx.supabase.co">
+  <input type="text" class="finput" id="sb-key-input" placeholder="anon public key (eyJ...)">
+  <button class="btn btn-p btn-full" onclick="saveSupabaseConfig()">CONNECT TO CLOUD</button>
+</div>
+
+<div class="nav">
+  <button class="tab active" onclick="showPage('seeds')">SEEDS</button>
+  <button class="tab" onclick="showPage('trees')">TREES</button>
+  <button class="tab" onclick="showPage('forest')">FOREST</button>
+  <button class="tab" onclick="showPage('month')">MONTH</button>
+</div>
+
+<div class="content">
+
+  <div class="page active" id="page-seeds">
+    <div id="alert-dead" style="display:none" class="alert-dead">☠ Day is dead — <span id="dead-ct"></span> seeds rotted.</div>
+    <div id="alert-log" style="display:none" class="alert-log">
+      <div class="alert-log-t">⚠ LOGGING SESSION REQUIRED</div>
+      <div class="alert-log-b" id="log-body"></div>
+    </div>
+    <div id="punish-box" style="display:none" class="punish-box">
+      <div class="punish-t">LOGGING ROOT</div>
+      <div class="punish-root" id="punish-root"></div>
+      <div class="punish-desc">2 hours of deep work. Not punishment — learning.</div>
+    </div>
+    <div class="sec">TODAY'S SEEDS</div>
+    <div id="seeds-grid"></div>
+    <button class="add-btn" onclick="openSeedModal()">+ PLANT A SEED</button>
+    <div class="sec">EXCEPTION</div>
+    <div style="font-size:13px;color:var(--tm);font-style:italic;margin-bottom:8px;">Need to skip today? Write your reason.</div>
+    <div class="exc-inp">
+      <input type="text" id="exc-input" placeholder="Reason for skipping...">
+      <button class="exc-mark-btn" onclick="markException()">MARK</button>
+    </div>
+    <div class="exc-today" id="exc-today"></div>
+  </div>
+
+  <div class="page" id="page-trees">
+    <div class="sec">ACTIVE TREES</div>
+    <div id="trees-list"></div>
+    <button class="add-btn" onclick="openTreeModal()">+ PLANT A TREE</button>
+  </div>
+
+  <div class="page" id="page-forest">
+    <div class="sec">YOUR FOREST</div>
+    <div class="fviz">
+      <div class="f-trees" id="f-trees"></div>
+      <div class="f-size-lbl" id="f-size-lbl"></div>
+    </div>
+    <div class="stats2" id="forest-stats"></div>
+    <div class="sec">PILLARS</div>
+    <div id="pillar-bars"></div>
+  </div>
+
+  <div class="page" id="page-month">
+    <div class="sec" id="month-heading"></div>
+    <div class="stat3" id="month-stats"></div>
+    <div class="mgrid" id="month-grid"></div>
+    <div class="sec">EXCEPTIONS</div>
+    <div id="exc-list"></div>
+  </div>
+
+</div>
+
+<div class="overlay" id="seed-overlay">
+  <div class="overlay-bg">
+    <div class="modal">
+      <div class="modal-t"><span id="seed-modal-title">PLANT A SEED</span><button class="modal-close" onclick="closeOverlay('seed-overlay')">✕</button></div>
+      <label class="flabel">ROOT</label>
+      <select class="fselect" id="s-root">
+        <option value="0">💰 Money</option>
+        <option value="1">🏋️ Fitness</option>
+        <option value="2">🌿 Personality</option>
+        <option value="3">☪️ Religion</option>
+        <option value="4">✨ Lifestyle</option>
+        <option value="5">🌊 Self-Healing</option>
+        <option value="6">📖 Knowledge</option>
+      </select>
+      <label class="flabel">DAILY GOAL</label>
+      <input type="text" class="finput" id="s-text" placeholder="e.g. Read 10 pages...">
+      <div class="btn-row">
+        <button class="btn btn-d" onclick="deleteSeed()" id="del-seed-btn" style="display:none">REMOVE</button>
+        <button class="btn btn-p" onclick="saveSeed()">PLANT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="tree-overlay">
+  <div class="overlay-bg">
+    <div class="modal">
+      <div class="modal-t"><span id="tree-modal-title">PLANT A TREE</span><button class="modal-close" onclick="closeOverlay('tree-overlay')">✕</button></div>
+      <label class="flabel">ROOT</label>
+      <select class="fselect" id="t-root">
+        <option value="0">💰 Money</option>
+        <option value="1">🏋️ Fitness</option>
+        <option value="2">🌿 Personality</option>
+        <option value="3">☪️ Religion</option>
+        <option value="4">✨ Lifestyle</option>
+        <option value="5">🌊 Self-Healing</option>
+        <option value="6">📖 Knowledge</option>
+      </select>
+      <label class="flabel">WEEKLY GOAL</label>
+      <input type="text" class="finput" id="t-text" placeholder="e.g. Launch portfolio site...">
+      <label class="flabel">PLANTED ON</label>
+      <input type="text" class="finput" id="t-planted" placeholder="YYYY-MM-DD">
+      <label class="flabel">STATUS</label>
+      <select class="fselect" id="t-status">
+        <option value="growing">Growing</option>
+        <option value="done">Done</option>
+        <option value="failed">Failed (acceptable)</option>
+      </select>
+      <div class="btn-row">
+        <button class="btn btn-d" onclick="deleteTree()" id="del-tree-btn" style="display:none">REMOVE</button>
+        <button class="btn btn-p" onclick="saveTree()">SAVE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const ROOTS=[
+  {name:'Money',icon:'💰',color:'#c9a84e'},
+  {name:'Fitness',icon:'🏋️',color:'#7ec982'},
+  {name:'Personality',icon:'🌿',color:'#4a8c4e'},
+  {name:'Religion',icon:'☪️',color:'#9b84d4'},
+  {name:'Lifestyle',icon:'✨',color:'#7ab8c4'},
+  {name:'Self-Healing',icon:'🌊',color:'#5b9ec9'},
+  {name:'Knowledge',icon:'📖',color:'#c97e5b'},
+];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function todayKey(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function ld(k,def){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):def;}catch(e){return def;}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+let SB_URL=ld('fs_sb_url','');
+let SB_KEY=ld('fs_sb_key','');
+let USER_ID=ld('fs_uid','');
+if(!USER_ID){USER_ID='forest_'+Math.random().toString(36).slice(2,10);sv('fs_uid',USER_ID);}
+
+let seeds=[];let trees=[];let dayRec={};let logPunish=null;
+let editSeedId=null,editTreeIdx=null;
+let saveTimer=null;
+let syncStatus='idle';
+
+function setSyncStatus(s,msg){
+  syncStatus=s;
+  const dot=document.getElementById('sync-dot'),txt=document.getElementById('sync-txt');
+  dot.className='sync-dot'+(s==='ok'?' ok':s==='err'?' err':s==='saving'?' saving':'');
+  txt.textContent=msg;
+}
+
+function isConfigured(){return SB_URL&&SB_KEY&&SB_URL.startsWith('https://')&&SB_KEY.length>20;}
+
+async function sbFetch(path,method,body){
+  const res=await fetch(SB_URL+'/rest/v1/'+path,{
+    method:method||'GET',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'resolution=merge-duplicates':''},
+    body:body?JSON.stringify(body):undefined
+  });
+  if(!res.ok){const t=await res.text();throw new Error(t);}
+  return method==='GET'?res.json():res;
+}
+
+async function loadFromCloud(){
+  if(!isConfigured()){setSyncStatus('err','not configured');document.getElementById('setup-banner').style.display='block';loadDefaults();render();return;}
+  document.getElementById('setup-banner').style.display='none';
+  setSyncStatus('saving','loading...');
+  try{
+    const rows=await sbFetch(`forest_data?user_id=eq.${encodeURIComponent(USER_ID)}&select=*`);
+    if(rows&&rows.length>0){
+      const r=rows[0];
+      seeds=r.seeds||getDefaultSeeds();
+      trees=r.trees||[];
+      dayRec=r.day_records||{};
+      logPunish=r.log_punish||null;
+    }else{
+      loadDefaults();
+      await saveToCloud();
+    }
+    setSyncStatus('ok','synced');
+  }catch(e){
+    setSyncStatus('err','offline — using local cache');
+    loadDefaults();
+  }
+  render();
+}
+
+function loadDefaults(){
+  seeds=ld('fs_seeds_cache',getDefaultSeeds());
+  trees=ld('fs_trees_cache',[]);
+  dayRec=ld('fs_dayrec_cache',{});
+  logPunish=ld('fs_logpunish_cache',null);
+}
+
+function getDefaultSeeds(){return[
+  {rootIdx:0,text:'Track one income action',id:'s1'},
+  {rootIdx:1,text:'Work out or stretch',id:'s2'},
+  {rootIdx:2,text:'Practice one kind act',id:'s3'},
+  {rootIdx:3,text:'Pray or reflect',id:'s4'},
+  {rootIdx:4,text:'Improve one habit',id:'s5'},
+  {rootIdx:5,text:'Journal 5 minutes',id:'s6'},
+  {rootIdx:6,text:'Learn something new',id:'s7'},
+];}
+
+function cacheLocally(){
+  sv('fs_seeds_cache',seeds);sv('fs_trees_cache',trees);
+  sv('fs_dayrec_cache',dayRec);sv('fs_logpunish_cache',logPunish);
+}
+
+async function saveToCloud(){
+  cacheLocally();
+  if(!isConfigured()){setSyncStatus('err','not configured');return;}
+  setSyncStatus('saving','saving...');
+  try{
+    await sbFetch('forest_data','POST',{user_id:USER_ID,seeds,trees,day_records:dayRec,log_punish:logPunish,updated_at:new Date().toISOString()});
+    setSyncStatus('ok','saved ✓');
+  }catch(e){
+    setSyncStatus('err','save failed — cached locally');
+  }
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  setSyncStatus('saving','saving...');
+  saveTimer=setTimeout(saveToCloud,1200);
+}
+
+function saveSupabaseConfig(){
+  const url=document.getElementById('sb-url-input').value.trim();
+  const key=document.getElementById('sb-key-input').value.trim();
+  if(!url||!key){alert('Please enter both URL and key.');return;}
+  SB_URL=url;SB_KEY=key;sv('fs_sb_url',SB_URL);sv('fs_sb_key',SB_KEY);
+  document.getElementById('setup-banner').style.display='none';
+  loadFromCloud();
+}
+
+function changeUID(){
+  const newId=prompt('Enter a Forest ID to switch to (or leave blank to generate new):');
+  if(newId===null)return;
+  USER_ID=newId.trim()||'forest_'+Math.random().toString(36).slice(2,10);
+  sv('fs_uid',USER_ID);
+  document.getElementById('uid-display').textContent=USER_ID;
+  loadFromCloud();
+}
+
+function getTR(){const k=todayKey();if(!dayRec[k])dayRec[k]={grown:[],rotted:[],exception:null};return dayRec[k];}
+function isGrown(id){return getTR().grown.includes(id);}
+function isRotted(id){return getTR().rotted.includes(id);}
+
+function toggleSeed(id){
+  const r=getTR();const g=r.grown.indexOf(id),rt=r.rotted.indexOf(id);
+  if(g===-1&&rt===-1){r.grown.push(id);}
+  else if(g!==-1){r.grown.splice(g,1);r.rotted.push(id);}
+  else{r.rotted.splice(rt,1);}
+  scheduleSave();render();
+}
+
+function isDayDead(k){const r=dayRec[k];if(!r||r.exception)return false;return r.rotted&&r.rotted.length>=2;}
+
+function getWeekDead(){
+  const now=new Date(),dow=now.getDay();let dead=0;
+  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()-dow+i);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;if(d<=now&&isDayDead(k))dead++;}
+  return dead;
+}
+
+function getCel(){return new Date().getDay()%7;}
+function getSeedTotal(){return Object.values(dayRec).filter(r=>!r.exception).reduce((a,r)=>a+(r.grown?r.grown.length:0),0);}
+
+function getMonthStats(){
+  const d=new Date(),year=d.getFullYear(),month=d.getMonth(),today=d.getDate();
+  let alive=0,dead=0,exc=0;
+  for(let day=1;day<=today;day++){const k=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;const r=dayRec[k];if(!r)continue;if(r.exception){exc++;continue;}if(isDayDead(k))dead++;else if(r.grown&&r.grown.length>0)alive++;}
+  return{alive,dead,exc};
+}
+
+function renderHeader(){
+  const now=new Date(),cel=getCel();
+  document.getElementById('date-disp').innerHTML=`${DAYS[now.getDay()]}<br>${now.getDate()} ${MONTHS[now.getMonth()].slice(0,3)}<br>${now.getFullYear()}`;
+  document.getElementById('cel-row').innerHTML=`<span style="color:var(--gd)">${ROOTS[cel].icon}</span> Celebrating: <span>${ROOTS[cel].name}</span>`;
+  document.getElementById('uid-display').textContent=USER_ID;
+  const dow=now.getDay();let dotsHtml='',dead=0;
+  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()-dow+i);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;let cls='wdot';if(i===dow)cls+=' today';if(d<now&&isDayDead(k)){cls+=' dead';dead++;}else if(d<now&&dayRec[k]&&((dayRec[k].grown||[]).length>0||dayRec[k].exception))cls+=' alive';dotsHtml+=`<div class="${cls}"></div>`;}
+  document.getElementById('week-dots').innerHTML=dotsHtml;
+  document.getElementById('log-warn').style.display=dead>=3?'inline':'none';
+}
+
+function renderSeeds(){
+  const rec=getTR(),rotted=(rec.rotted||[]).length,dead=isDayDead(todayKey()),wdead=getWeekDead();
+  document.getElementById('alert-dead').style.display=dead?'block':'none';
+  document.getElementById('dead-ct').textContent=rotted;
+  if(wdead>=3){
+    document.getElementById('alert-log').style.display='block';
+    document.getElementById('log-body').textContent=`${wdead} dead days this week. A 2-hour logging session is required.`;
+    if(!logPunish){logPunish={rootIdx:Math.floor(Math.random()*7),date:todayKey()};scheduleSave();}
+    document.getElementById('punish-box').style.display='block';
+    document.getElementById('punish-root').textContent=`${ROOTS[logPunish.rootIdx].icon} ${ROOTS[logPunish.rootIdx].name}`;
+  }else{
+    document.getElementById('alert-log').style.display='none';
+    document.getElementById('punish-box').style.display='none';
+    if(wdead<3&&logPunish){logPunish=null;scheduleSave();}
+  }
+  const cel=getCel();
+  document.getElementById('seeds-grid').innerHTML=seeds.map(s=>{
+    const g=isGrown(s.id),r=isRotted(s.id),isCel=s.rootIdx===cel;
+    return`<div class="seed-card${g?' grown':''}${r?' rotted':''}${isCel?' cel':''}" onclick="toggleSeed('${s.id}')">
+      <div class="root-icon">${ROOTS[s.rootIdx].icon}</div>
+      <div class="seed-info"><div class="root-nm" style="${isCel?'color:var(--gd)':''}">${ROOTS[s.rootIdx].name}${isCel?' ★':''}</div><div class="seed-txt">${s.text}</div></div>
+      <div class="chk${g?' grown':''}${r?' rotted':''}">${g?'✓':r?'✗':''}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('exc-today').textContent=rec.exception?`⚠ Skipped: "${rec.exception}"`:'';
+}
+
+function renderTrees(){
+  const list=document.getElementById('trees-list');
+  if(!trees.length){list.innerHTML='<div style="font-size:14px;color:var(--tm);font-style:italic;margin-bottom:12px;">No trees yet. Plant your first weekly goal.</div>';return;}
+  const now=new Date();
+  list.innerHTML=trees.map((t,i)=>{
+    const planted=new Date(t.planted),days=Math.floor((now-planted)/86400000),prog=Math.min(100,(days/7)*100),sc=t.status||'growing',carried=sc==='growing'&&days>7;
+    return`<div class="tree-card">
+      <div class="tree-hdr"><span class="tree-badge">${ROOTS[t.rootIdx].icon} ${ROOTS[t.rootIdx].name}</span><button class="tree-sbtn ${sc}" onclick="cycleTree(${i})">${sc.toUpperCase()}</button><button class="tree-edit-btn" onclick="openTreeModal(${i})">EDIT</button></div>
+      <div class="tree-title">${t.text}</div>
+      ${carried?'<div class="carried">🌲 Carried over — same tree until result</div>':''}
+      <div class="tree-days" style="margin-bottom:5px">Day ${days} · Planted ${t.planted}</div>
+      <div class="tree-prog"><div class="tree-prog-fill" style="width:${prog}%"></div></div>
+      <div class="tree-days">${Math.min(days,7)}/7 days</div>
+    </div>`;
+  }).join('');
+}
+
+function cycleTree(i){const o=['growing','done','failed'];const c=trees[i].status||'growing';trees[i].status=o[(o.indexOf(c)+1)%3];scheduleSave();renderTrees();}
+
+function renderForest(){
+  const total=getSeedTotal(),done=trees.filter(t=>t.status==='done').length,pts=total+done*7;
+  const emojis=['🌱','🌿','🌲','🌳'];const cnt=Math.min(50,Math.floor(pts/3)+1);
+  let h='';for(let i=0;i<cnt;i++){const e=emojis[Math.min(3,Math.floor(i/(cnt/4)))];h+=`<span class="f-tree${i>cnt*.7?' dim':''}">${e}</span>`;}
+  document.getElementById('f-trees').innerHTML=h||'<span style="font-size:13px;color:var(--tm);font-style:italic">Plant seeds to grow your forest...</span>';
+  let lbl='Seedling';if(pts>100)lbl='Young Grove';if(pts>300)lbl='Growing Forest';if(pts>700)lbl='Ancient Forest';
+  document.getElementById('f-size-lbl').textContent=`${lbl} · ${pts} growth pts`;
+  const ms=getMonthStats();
+  document.getElementById('forest-stats').innerHTML=`
+    <div class="sbox"><div class="snum" style="color:var(--mn)">${ms.alive}</div><div class="slbl">ALIVE DAYS</div></div>
+    <div class="sbox"><div class="snum" style="color:var(--rr)">${ms.dead}</div><div class="slbl">DEAD DAYS</div></div>
+    <div class="sbox"><div class="snum" style="color:var(--gd)">${done}</div><div class="slbl">TREES GROWN</div></div>
+    <div class="sbox"><div class="snum" style="color:var(--mn)">${total}</div><div class="slbl">SEEDS GROWN</div></div>
+  `;
+  const mx=Math.max(1,...ROOTS.map((_,ri)=>Object.values(dayRec).filter(d=>!d.exception).reduce((a,d)=>a+seeds.filter(s=>s.rootIdx===ri&&(d.grown||[]).includes(s.id)).length,0)));
+  document.getElementById('pillar-bars').innerHTML=ROOTS.map((r,ri)=>{
+    const gt=Object.values(dayRec).filter(d=>!d.exception).reduce((a,d)=>a+seeds.filter(s=>s.rootIdx===ri&&(d.grown||[]).includes(s.id)).length,0);
+    return`<div class="pbar-row"><div class="pbar-hdr"><span class="pbar-nm">${r.icon} ${r.name}</span><span class="pbar-ct">${gt} grown</span></div><div class="pbar-bg"><div class="pbar-fill" style="width:${(gt/mx)*100}%;background:${r.color}"></div></div></div>`;
+  }).join('');
+}
+
+function renderMonth(){
+  const now=new Date(),year=now.getFullYear(),month=now.getMonth(),dim=new Date(year,month+1,0).getDate(),fdow=new Date(year,month,1).getDay(),today=now.getDate();
+  document.getElementById('month-heading').textContent=`${MONTHS[month].toUpperCase()} ${year}`;
+  const ms=getMonthStats();
+  document.getElementById('month-stats').innerHTML=`
+    <div class="sbox"><div class="snum" style="color:var(--mn)">${ms.alive}</div><div class="slbl">ALIVE</div></div>
+    <div class="sbox"><div class="snum" style="color:var(--rr)">${ms.dead}</div><div class="slbl">DEAD</div></div>
+    <div class="sbox"><div class="snum" style="color:var(--gd)">${ms.exc}</div><div class="slbl">EXCEP.</div></div>
+  `;
+  let g=DAYS.map(d=>`<div class="mday-hdr">${d[0]}</div>`).join('');
+  for(let i=0;i<fdow;i++)g+='<div></div>';
+  for(let day=1;day<=dim;day++){const k=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`,r=dayRec[k];let cls='mday';const fut=day>today;if(fut)cls+=' future';else if(r&&r.exception)cls+=' exception';else if(isDayDead(k))cls+=' dead';else if(r&&r.grown&&r.grown.length>0)cls+=' alive';g+=`<div class="${cls}">${day}</div>`;}
+  document.getElementById('month-grid').innerHTML=g;
+  const excs=Object.entries(dayRec).filter(([k,v])=>{const d=new Date(k);return v.exception&&d.getMonth()===month&&d.getFullYear()===year;});
+  document.getElementById('exc-list').innerHTML=excs.length?excs.map(([k,v])=>`<div class="exc-item"><span class="exc-d">${DAYS[new Date(k).getDay()]} ${parseInt(k.split('-')[2])}</span><span class="exc-r">${v.exception}</span></div>`).join(''):'<div style="font-size:13px;color:var(--tm);font-style:italic">No exceptions this month.</div>';
+}
+
+function render(){renderHeader();renderSeeds();renderTrees();renderForest();renderMonth();}
+
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  document.querySelectorAll('.tab')[['seeds','trees','forest','month'].indexOf(n)].classList.add('active');
+}
+
+function openSeedModal(id){
+  editSeedId=id||null;
+  const delBtn=document.getElementById('del-seed-btn');
+  if(id){const s=seeds.find(s=>s.id===id);if(!s)return;document.getElementById('seed-modal-title').textContent='TEND THE SEED';document.getElementById('s-root').value=s.rootIdx;document.getElementById('s-text').value=s.text;delBtn.style.display='inline-block';}
+  else{document.getElementById('seed-modal-title').textContent='PLANT A SEED';document.getElementById('s-text').value='';delBtn.style.display='none';}
+  document.getElementById('seed-overlay').classList.add('open');
+}
+function saveSeed(){
+  const ri=parseInt(document.getElementById('s-root').value),tx=document.getElementById('s-text').value.trim();
+  if(!tx)return;
+  if(editSeedId){const s=seeds.find(s=>s.id===editSeedId);if(s){s.rootIdx=ri;s.text=tx;}}
+  else seeds.push({rootIdx:ri,text:tx,id:'s'+Date.now()});
+  scheduleSave();closeOverlay('seed-overlay');render();
+}
+function deleteSeed(){if(!editSeedId)return;seeds=seeds.filter(s=>s.id!==editSeedId);scheduleSave();closeOverlay('seed-overlay');render();}
+
+function openTreeModal(idx){
+  editTreeIdx=(idx!==undefined)?idx:null;
+  const now=new Date(),td=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const delBtn=document.getElementById('del-tree-btn');
+  if(idx!==undefined){const t=trees[idx];document.getElementById('tree-modal-title').textContent='EXAMINE TREE';document.getElementById('t-root').value=t.rootIdx;document.getElementById('t-text').value=t.text;document.getElementById('t-planted').value=t.planted;document.getElementById('t-status').value=t.status||'growing';delBtn.style.display='inline-block';}
+  else{document.getElementById('tree-modal-title').textContent='PLANT A TREE';document.getElementById('t-text').value='';document.getElementById('t-planted').value=td;document.getElementById('t-status').value='growing';delBtn.style.display='none';}
+  document.getElementById('tree-overlay').classList.add('open');
+}
+function saveTree(){
+  const ri=parseInt(document.getElementById('t-root').value),tx=document.getElementById('t-text').value.trim(),pl=document.getElementById('t-planted').value.trim(),st=document.getElementById('t-status').value;
+  if(!tx)return;
+  if(editTreeIdx!==null)trees[editTreeIdx]={rootIdx:ri,text:tx,planted:pl,status:st};
+  else trees.push({rootIdx:ri,text:tx,planted:pl,status:st});
+  scheduleSave();closeOverlay('tree-overlay');render();
+}
+function deleteTree(){if(editTreeIdx===null)return;trees.splice(editTreeIdx,1);scheduleSave();closeOverlay('tree-overlay');render();}
+function closeOverlay(id){document.getElementById(id).classList.remove('open');}
+
+function markException(){
+  const reason=document.getElementById('exc-input').value.trim();if(!reason)return;
+  getTR().exception=reason;scheduleSave();document.getElementById('exc-input').value='';render();
+}
+
+loadFromCloud();
+</script>
